@@ -1,0 +1,5 @@
+{
+  "ProjectOverviewURL": "https://sap-build-eu10-trial.launchpad.cfapps.eu10.hana.ondemand.com/lcapCustomer_Loyal_AC132288U00.Customer_Loyal_AC132288U00Launchpad-1.0.0/",
+  "DeployedUTCTime": "2024-11-20T12:22:57.712Z",
+  "ApplicationLogURL": "https://logs.cf.eu10-004.hana.ondemand.com/app/dashboards#/view/Overview?_g=(filters:!((query:(match_phrase:(component_name:Customer_Loyal_AC132288U00-srv)))))"
+}

@@ -1,0 +1,2 @@
+sap.ui.require(["sap/fe/test/JourneyRunner","CustomerLoyalAC132288U00/customers/test/integration/FirstJourney","CustomerLoyalAC132288U00/customers/test/integration/pages/CustomersList","CustomerLoyalAC132288U00/customers/test/integration/pages/CustomersObjectPage"],function(e,t,s,r){"use strict";var e=new e({launchUrl:sap.ui.require.toUrl("CustomerLoyalAC132288U00/customers")+"/index.html"});e.run({pages:{onTheCustomersList:s,onTheCustomersObjectPage:r}},t.run)});
+//# sourceMappingURL=opaTests.qunit.js.map

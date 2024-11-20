@@ -1,0 +1,261 @@
+_schema-version: '3.1'
+ID: Customer_Loyal_AC132288U00
+version: 1.0.0
+description: A simple CAP project.
+parameters:
+  deploy_mode: html5-repo
+  enable-parallel-deployments: true
+build-parameters:
+  before-all:
+    - builder: custom
+      commands:
+        - rm -rf build/dist
+        - mkdir -p build/dist
+        - rm -rf build/ui-deployer
+        - mkdir -p build/ui-deployer
+    - builder: custom
+      commands:
+        - npm install --production
+        - >-
+          bash -c "cds -v | grep 'cds-dk' || npm i --production --no-save
+          @sap/cds-dk @sap/mdk-tools"
+        - bash -c "export PATH=$PATH:$(pwd)/node_modules/.bin"
+        - cds build --production
+  after-all:
+    - builder: custom
+      commands:
+        - npm ci
+modules:
+  - name: Customer_Loyal_AC132288U00-customerloyalac132288u00.customers
+    type: html5
+    path: app/Customer_Loyal_AC132288U00.customers
+    build-parameters:
+      builder: custom
+      commands:
+        - rm -rf dist-zip dist
+        - npm install
+        - >-
+          npx -p @ui5/cli@^3.0.0 ui5 build --dest dist
+          --include-task=generateCachebusterInfo
+        - mkdir dist-zip
+        - >-
+          bash -c "cd dist && npx bestzip
+          ../dist-zip/customerloyalac132288u00customers.zip *"
+      _artifactName: customerloyalac132288u00customers.zip
+      supported-platforms: []
+      build-result: dist-zip
+  - name: Customer_Loyal_AC132288U00-customerloyalac132288u00.purchases
+    type: html5
+    path: app/Customer_Loyal_AC132288U00.purchases
+    build-parameters:
+      builder: custom
+      commands:
+        - rm -rf dist-zip dist
+        - npm install
+        - >-
+          npx -p @ui5/cli@^3.0.0 ui5 build --dest dist
+          --include-task=generateCachebusterInfo
+        - mkdir dist-zip
+        - >-
+          bash -c "cd dist && npx bestzip
+          ../dist-zip/customerloyalac132288u00purchases.zip *"
+      _artifactName: customerloyalac132288u00purchases.zip
+      supported-platforms: []
+      build-result: dist-zip
+  - name: Customer_Loyal_AC132288U00-customerloyalac132288u00.redemptions
+    type: html5
+    path: app/Customer_Loyal_AC132288U00.redemptions
+    build-parameters:
+      builder: custom
+      commands:
+        - rm -rf dist-zip dist
+        - npm install
+        - >-
+          npx -p @ui5/cli@^3.0.0 ui5 build --dest dist
+          --include-task=generateCachebusterInfo
+        - mkdir dist-zip
+        - >-
+          bash -c "cd dist && npx bestzip
+          ../dist-zip/customerloyalac132288u00redemptions.zip *"
+      _artifactName: customerloyalac132288u00redemptions.zip
+      supported-platforms: []
+      build-result: dist-zip
+  - name: Customer_Loyal_AC132288U00-db-deployer
+    type: hdb
+    path: gen/db
+    parameters:
+      buildpack: nodejs_buildpack
+    build-parameters:
+      builder: npm
+      ignore: []
+    requires:
+      - name: Customer_Loyal_AC132288U00-service-uaa
+      - name: Customer_Loyal_AC132288U00-service-db
+  - name: Customer_Loyal_AC132288U00-srv
+    type: nodejs
+    path: gen/srv
+    parameters:
+      memory: 256MB
+    provides:
+      - name: srv-api
+        properties:
+          srv-url: ${default-url}
+    build-parameters:
+      builder: npm
+      ignore: []
+    requires:
+      - name: Customer_Loyal_AC132288U00-service-uaa
+      - name: Customer_Loyal_AC132288U00-service-db
+      - name: Customer_Loyal_AC132288U00-service-destination
+      - name: Customer_Loyal_AC132288U00-service-metadata
+      - name: Customer_Loyal_AC132288U00-service-connectivity
+      - name: Customer_Loyal_AC132288U00-service-logs
+  - name: Customer_Loyal_AC132288U00-aux-destinations
+    type: com.sap.application.content
+    parameters:
+      content:
+        subaccount:
+          existing_destinations_policy: update
+          destinations:
+            - Authentication: OAuth2UserTokenExchange
+              Name: Customer_Loyal_AC132288U00-service-uaa
+              ServiceInstanceName: Customer_Loyal_AC132288U00-uaa
+              ServiceKeyName: Customer_Loyal_AC132288U00-uaa-key
+              sap.cloud.service: lcap.Customer_Loyal_AC132288U00
+            - Authentication: OAuth2UserTokenExchange
+              Name: Customer_Loyal_AC132288U00-app-srv
+              TokenServiceInstanceName: Customer_Loyal_AC132288U00-uaa
+              TokenServiceKeyName: Customer_Loyal_AC132288U00-uaa-key
+              URL: ~{srv-api/srv-url}
+              sap.cloud.service: lcap.Customer_Loyal_AC132288U00
+            - Name: Customer_Loyal_AC132288U00-service-html5-apps-repo-host
+              ServiceInstanceName: Customer_Loyal_AC132288U00-html5-apps-repo-host
+              ServiceKeyName: Customer_Loyal_AC132288U00-html5-apps-repo-host-key
+              sap.cloud.service: lcap.Customer_Loyal_AC132288U00
+            - Authentication: OAuth2UserTokenExchange
+              Name: Customer_Loyal_AC132288U00-customer_Loyal_AC132288U00Srv
+              TokenServiceInstanceName: Customer_Loyal_AC132288U00-uaa
+              TokenServiceKeyName: Customer_Loyal_AC132288U00-uaa-key
+              URL: ~{srv-api/srv-url}/service/customer_Loyal_AC132288U00
+              sap.cloud.service: lcap.Customer_Loyal_AC132288U00
+              sap.applicationdevelopment.actions.enabled: true
+              sap.build.usage: CAP
+              sap.processautomation.enabled: true
+              HTML5.DynamicDestination: true
+              WebIDEEnabled: true
+              MobileEnabled: true
+              AppgyverEnabled: true
+    build-parameters:
+      no-source: true
+    requires:
+      - name: Customer_Loyal_AC132288U00-service-uaa
+        parameters:
+          service-key:
+            name: Customer_Loyal_AC132288U00-uaa-key
+      - name: srv-api
+      - name: Customer_Loyal_AC132288U00-service-html5-apps-repo-host
+        parameters:
+          service-key:
+            name: Customer_Loyal_AC132288U00-html5-apps-repo-host-key
+      - name: Customer_Loyal_AC132288U00-service-destination
+        parameters:
+          content-target: true
+  - name: Customer_Loyal_AC132288U00-launchpad
+    type: html5
+    path: build/launchpad
+    build-parameters:
+      builder: custom
+      commands:
+        - npm install
+        - >-
+          npx -p @ui5/cli@^3.0.0 ui5 build --dest dist
+          --include-task=generateCachebusterInfo
+        - bash -c "cd dist && npx bestzip ../../../build/dist/launchpad.zip *"
+        - rm -rf dist
+      _artifactName: launchpad.zip
+      supported-platforms: []
+      build-result: ../../build/dist
+  - name: Customer_Loyal_AC132288U00-aux-ui-deployer
+    type: com.sap.application.content
+    path: build/ui-deployer
+    build-parameters:
+      build-result: resources
+      requires:
+        - name: Customer_Loyal_AC132288U00-customerloyalac132288u00.customers
+          artifacts:
+            - customerloyalac132288u00customers.zip
+          target-path: resources
+        - name: Customer_Loyal_AC132288U00-customerloyalac132288u00.purchases
+          artifacts:
+            - customerloyalac132288u00purchases.zip
+          target-path: resources
+        - name: Customer_Loyal_AC132288U00-customerloyalac132288u00.redemptions
+          artifacts:
+            - customerloyalac132288u00redemptions.zip
+          target-path: resources
+        - name: Customer_Loyal_AC132288U00-launchpad
+          artifacts:
+            - launchpad.zip
+          target-path: resources
+    requires:
+      - name: Customer_Loyal_AC132288U00-service-html5-apps-repo-host
+        parameters:
+          content-target: true
+resources:
+  - type: org.cloudfoundry.managed-service
+    name: Customer_Loyal_AC132288U00-service-uaa
+    parameters:
+      service: xsuaa
+      service-plan: application
+      service-name: Customer_Loyal_AC132288U00-uaa
+      path: xs-security.json
+      config:
+        oauth2-configuration:
+          redirect-uris:
+            - https://*.${default-domain}/login/*
+          credential-types:
+            - binding-secret
+            - x509
+        xsappname: Customer_Loyal_AC132288U00-${space}
+        role-collections: []
+  - type: org.cloudfoundry.managed-service
+    name: Customer_Loyal_AC132288U00-service-db
+    parameters:
+      service: hana
+      service-plan: hdi-shared
+      service-name: Customer_Loyal_AC132288U00-db
+  - type: org.cloudfoundry.managed-service
+    name: Customer_Loyal_AC132288U00-service-destination
+    parameters:
+      service: destination
+      service-plan: lite
+      service-name: Customer_Loyal_AC132288U00-destination
+      config:
+        HTML5Runtime_enabled: true
+        version: 1.0.0
+  - type: org.cloudfoundry.user-provided-service
+    name: Customer_Loyal_AC132288U00-service-metadata
+    parameters:
+      service: metadata
+      service-plan: standard
+      service-name: Customer_Loyal_AC132288U00-metadata
+      config:
+        default-domain: ${default-domain}
+  - type: org.cloudfoundry.managed-service
+    name: Customer_Loyal_AC132288U00-service-connectivity
+    parameters:
+      service: connectivity
+      service-plan: lite
+      service-name: Customer_Loyal_AC132288U00-connectivity
+  - type: org.cloudfoundry.managed-service
+    name: Customer_Loyal_AC132288U00-service-logs
+    parameters:
+      service: application-logs
+      service-plan: lite
+      service-name: Customer_Loyal_AC132288U00-logs
+  - type: org.cloudfoundry.managed-service
+    name: Customer_Loyal_AC132288U00-service-html5-apps-repo-host
+    parameters:
+      service: html5-apps-repo
+      service-plan: app-host
+      service-name: Customer_Loyal_AC132288U00-html5-apps-repo-host
